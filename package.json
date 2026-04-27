@@ -1,0 +1,7 @@
+{
+  "name": "payout-engine",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev"
+  }
+}

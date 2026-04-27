@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-pending {
+    @apply bg-gray-700 text-gray-300;
+  }
+  .badge-processing {
+    @apply bg-blue-900 text-blue-300;
+  }
+  .badge-completed {
+    @apply bg-emerald-900 text-emerald-300;
+  }
+  .badge-failed {
+    @apply bg-red-900 text-red-300;
+  }
+  .card {
+    @apply bg-gray-900 border border-gray-800 rounded-xl p-5;
+  }
+  .btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900 disabled:cursor-not-allowed
+           text-white font-semibold px-4 py-2.5 rounded-lg transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-indigo-400;
+  }
+  .input-field {
+    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+           placeholder-gray-500 w-full;
+  }
+  .select-field {
+    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2
+           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full;
+  }
+}

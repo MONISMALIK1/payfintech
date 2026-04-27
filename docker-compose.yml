@@ -1,0 +1,97 @@
+version: "3.9"
+
+# All secrets come from a .env file at the repo root.
+# Copy .env.example → .env and fill in real values before running.
+# NEVER commit .env to git.
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-payout_engine}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis ──────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Django API ─────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env          # reads from backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py shell < scripts/seed.py &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60"
+
+  # ── Celery Worker ──────────────────────────────────────────────
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A config worker --loglevel=info --concurrency=4
+
+  # ── Celery Beat ────────────────────────────────────────────────
+  beat:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A config beat --loglevel=info
+
+  # ── React Frontend ─────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

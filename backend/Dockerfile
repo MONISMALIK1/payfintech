@@ -19,4 +19,4 @@ EXPOSE 8000
 
 # Use shell form so $PORT is expanded at runtime (Railway injects PORT).
 # Falls back to 8000 for local docker-compose.
-CMD sh -c "python manage.py migrate && (python manage.py seed_data || true) && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 60"
+CMD sh -c "echo '=== Starting. PORT='$PORT && python manage.py migrate && echo '=== Migrations OK' && (python manage.py seed_data || echo '=== Seed failed, continuing') && echo '=== Starting gunicorn on port '${PORT:-8000} && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 60"

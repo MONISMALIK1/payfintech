@@ -1,6 +1,5 @@
 # Payout Engine — System Explainer
 
-> Written from the perspective of a senior backend engineer and system architect.  
 > This document explains not just *what* was built, but *why* every decision was made the way it was — and what breaks if you change it.
 
 ---

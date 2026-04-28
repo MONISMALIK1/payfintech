@@ -86,7 +86,12 @@ services:
 
   # ── React Frontend ─────────────────────────────────────────────
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Nginx inside the container proxies /api/ → backend:8000
+        # so the built JS just calls /api/v1 (relative).
+        VITE_API_URL: /api/v1
     restart: unless-stopped
     ports:
       - "80:80"

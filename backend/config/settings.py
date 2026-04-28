@@ -63,7 +63,14 @@ REST_FRAMEWORK = {
     "UNAUTHENTICATED_USER": None,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+_cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+if _cors_origins:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+else:
+    # Dev fallback — open (safe because DEBUG=True locally)
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_HEADERS = [
     "accept",
     "content-type",
